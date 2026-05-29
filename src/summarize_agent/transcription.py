@@ -11,6 +11,7 @@ from .models import TranscriptResult, Utterance
 
 class AssemblyAIClient:
     BASE_URL = "https://api.assemblyai.com/v2"
+    SPEECH_MODELS = ["universal-3-pro", "universal-2"]
 
     def __init__(self, api_key: str, timeout: int = 600, poll_interval: float = 2.0):
         self.api_key = api_key
@@ -25,19 +26,26 @@ class AssemblyAIClient:
         with open(file_path, "rb") as f:
             response = self._client.post(
                 f"{self.BASE_URL}/upload",
-                files={"file": f},
+                content=f,
+                headers={"Content-Type": "application/octet-stream"},
             )
         response.raise_for_status()
         return response.json()["upload_url"]
 
-    def start_transcription(self, audio_url: str) -> str:
+    def start_transcription(self, audio_url: str, language: str = "auto") -> str:
+        payload: dict[str, Any] = {
+            "audio_url": audio_url,
+            "speaker_labels": True,
+            "speech_models": self.SPEECH_MODELS,
+        }
+        if language == "auto":
+            payload["language_detection"] = True
+        else:
+            payload["language_code"] = language
+
         response = self._client.post(
             f"{self.BASE_URL}/transcript",
-            json={
-                "audio_url": audio_url,
-                "speaker_labels": True,
-                "speech_model": "best",
-            },
+            json=payload,
         )
         response.raise_for_status()
         return response.json()["id"]
@@ -63,12 +71,12 @@ class AssemblyAIClient:
 
             time.sleep(self.poll_interval)
 
-    def transcribe(self, file_path: str) -> TranscriptResult:
+    def transcribe(self, file_path: str, language: str = "auto") -> TranscriptResult:
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"Audio file not found: {file_path}")
 
         upload_url = self.upload_file(file_path)
-        transcript_id = self.start_transcription(upload_url)
+        transcript_id = self.start_transcription(upload_url, language=language)
         result = self.wait_for_completion(transcript_id)
 
         return self._parse_result(file_path, result)

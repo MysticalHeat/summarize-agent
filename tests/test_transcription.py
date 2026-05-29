@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import tempfile
+from unittest.mock import MagicMock
+
 import pytest
 
 from summarize_agent.models import TranscriptResult, Utterance
@@ -77,6 +80,66 @@ class TestAssemblyAIClientParsing:
         assert result.utterances == []
         assert result.speakers == []
         assert result.transcript == "Single block of text"
+
+
+class TestAssemblyAIClientRequests:
+    def test_upload_file_uses_octet_stream_request(self):
+        client = AssemblyAIClient("test-key")
+        response = MagicMock()
+        response.json.return_value = {"upload_url": "https://example.com/uploaded"}
+        response.raise_for_status.return_value = None
+        client._client.post = MagicMock(return_value=response)
+
+        with tempfile.NamedTemporaryFile(suffix=".mp3") as audio_file:
+            audio_file.write(b"audio-bytes")
+            audio_file.flush()
+
+            upload_url = client.upload_file(audio_file.name)
+
+        assert upload_url == "https://example.com/uploaded"
+        _, kwargs = client._client.post.call_args
+        assert client._client.post.call_args.args == (f"{client.BASE_URL}/upload",)
+        assert kwargs["headers"] == {"Content-Type": "application/octet-stream"}
+        assert hasattr(kwargs["content"], "read")
+
+    def test_start_transcription_uses_current_speech_models_and_auto_language_detection(self):
+        client = AssemblyAIClient("test-key")
+        response = MagicMock()
+        response.json.return_value = {"id": "transcript-id"}
+        response.raise_for_status.return_value = None
+        client._client.post = MagicMock(return_value=response)
+
+        transcript_id = client.start_transcription("https://example.com/audio.mp3")
+
+        assert transcript_id == "transcript-id"
+        client._client.post.assert_called_once_with(
+            f"{client.BASE_URL}/transcript",
+            json={
+                "audio_url": "https://example.com/audio.mp3",
+                "speaker_labels": True,
+                "speech_models": ["universal-3-pro", "universal-2"],
+                "language_detection": True,
+            },
+        )
+
+    def test_start_transcription_uses_explicit_language_code(self):
+        client = AssemblyAIClient("test-key")
+        response = MagicMock()
+        response.json.return_value = {"id": "transcript-id"}
+        response.raise_for_status.return_value = None
+        client._client.post = MagicMock(return_value=response)
+
+        client.start_transcription("https://example.com/audio.mp3", language="ko")
+
+        client._client.post.assert_called_once_with(
+            f"{client.BASE_URL}/transcript",
+            json={
+                "audio_url": "https://example.com/audio.mp3",
+                "speaker_labels": True,
+                "speech_models": ["universal-3-pro", "universal-2"],
+                "language_code": "ko",
+            },
+        )
 
 
 class TestUtterance:

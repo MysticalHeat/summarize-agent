@@ -33,7 +33,7 @@ def run_pipeline(audio_path: str, model: str, output_dir: str, language: str) ->
         timeout=settings.assemblyai_timeout,
         poll_interval=settings.assemblyai_poll_interval,
     )
-    transcript = transcription_client.transcribe(audio_path)
+    transcript = transcription_client.transcribe(audio_path, language=cli_config.language)
 
     summarization_client = OpenRouterClient(settings.openrouter_api_key)
     summary = summarization_client.summarize(transcript, effective_model, cli_config.language)
