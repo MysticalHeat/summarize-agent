@@ -69,14 +69,16 @@ class TestCLIConfig:
             "audio_file": "/path/to/audio.mp3",
             "--model": "custom/model",
             "--output-dir": "/output",
-            "--language": "en",
+            "--transcript-language": "en",
+            "--summary-language": "ru",
         }
         config = CLIConfig.from_args(args)
 
         assert config.audio_path == "/path/to/audio.mp3"
         assert config.model == "custom/model"
         assert config.output_dir == "/output"
-        assert config.language == "en"
+        assert config.transcript_language == "en"
+        assert config.summary_language == "ru"
 
     def test_from_args_with_minimal_options(self):
         args = {
@@ -87,7 +89,8 @@ class TestCLIConfig:
         assert config.audio_path == "/path/to/audio.mp3"
         assert config.model == ""
         assert config.output_dir == "."
-        assert config.language == "auto"
+        assert config.transcript_language == "auto"
+        assert config.summary_language == "auto"
 
     def test_cli_precedence_for_model(self):
         env_model = "env/model"

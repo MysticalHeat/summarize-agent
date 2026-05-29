@@ -77,7 +77,8 @@ class TestSuccessfulPipeline:
                     audio_path=temp_audio_file,
                     model="custom/model",
                     output_dir=output_dir,
-                    language="ko",
+                    transcript_language="ko",
+                    summary_language="ko",
                 )
 
                 assert result.transcript == transcript
@@ -105,7 +106,8 @@ class TestAssemblyAIError:
                         audio_path=temp_audio_file,
                         model="",
                         output_dir=output_dir,
-                        language="auto",
+                        transcript_language="auto",
+                        summary_language="auto",
                     )
 
 
@@ -130,7 +132,8 @@ class TestOpenRouterError:
                         audio_path=temp_audio_file,
                         model="",
                         output_dir=output_dir,
-                        language="auto",
+                        transcript_language="auto",
+                        summary_language="auto",
                     )
 
 
@@ -155,5 +158,6 @@ class TestInvalidModelResponse:
                         audio_path=temp_audio_file,
                         model="",
                         output_dir=output_dir,
-                        language="auto",
+                        transcript_language="auto",
+                        summary_language="auto",
                     )

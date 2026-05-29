@@ -9,7 +9,7 @@ from .summarization import OpenRouterClient
 from .transcription import AssemblyAIClient
 
 
-def run_pipeline(audio_path: str, model: str, output_dir: str, language: str) -> ProcessingResult:
+def run_pipeline(audio_path: str, model: str, output_dir: str, transcript_language: str, summary_language: str) -> ProcessingResult:
     settings = Settings.from_env()
 
     errors = settings.validate()
@@ -20,7 +20,8 @@ def run_pipeline(audio_path: str, model: str, output_dir: str, language: str) ->
         "audio_file": audio_path,
         "--model": model,
         "--output-dir": output_dir,
-        "--language": language,
+        "--transcript-language": transcript_language,
+        "--summary-language": summary_language,
     })
 
     effective_model = cli_config.model or settings.default_model
@@ -33,10 +34,10 @@ def run_pipeline(audio_path: str, model: str, output_dir: str, language: str) ->
         timeout=settings.assemblyai_timeout,
         poll_interval=settings.assemblyai_poll_interval,
     )
-    transcript = transcription_client.transcribe(audio_path, language=cli_config.language)
+    transcript = transcription_client.transcribe(audio_path, language=cli_config.transcript_language)
 
     summarization_client = OpenRouterClient(settings.openrouter_api_key)
-    summary = summarization_client.summarize(transcript, effective_model, cli_config.language)
+    summary = summarization_client.summarize(transcript, effective_model, cli_config.summary_language)
 
     result = ProcessingResult(transcript=transcript, summary=summary)
 

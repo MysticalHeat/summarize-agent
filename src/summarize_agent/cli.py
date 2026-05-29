@@ -9,15 +9,18 @@ def main() -> None:
     args = sys.argv[1:]
 
     if len(args) < 1 or args[0] == "--help" or args[0] == "-h":
-        print("Usage: summarize <audio-file> [--model MODEL] [--output-dir DIR] [--language LANG]")
+        print("Usage: summarize <audio-file> [--model MODEL] [--output-dir DIR]")
+        print("       [--transcript-language LANG] [--summary-language LANG]")
         print("")
         print("Arguments:")
         print("  audio-file          Path to the audio file to summarize")
         print("")
         print("Options:")
-        print("  --model MODEL       OpenRouter model to use (default: from env or claude-sonnet)")
-        print("  --output-dir DIR    Output directory (default: current directory)")
-        print("  --language LANG    Output language: 'auto' or language code (default: auto)")
+        print("  --model MODEL              OpenRouter model to use (default: from env or claude-sonnet)")
+        print("  --output-dir DIR           Output directory (default: current directory)")
+        print("  --transcript-language LANG Language for speech-to-text: 'auto' or language code (default: auto)")
+        print("  --summary-language LANG   Language for summary output: 'auto' or language code (default: auto)")
+        print("                              Use 'auto' to derive from transcript detected language")
         sys.exit(0)
 
     audio_file = args[0]
@@ -31,8 +34,15 @@ def main() -> None:
         elif args[i] == "--output-dir":
             kwargs["output_dir"] = args[i + 1]
             i += 2
+        elif args[i] == "--transcript-language":
+            kwargs["transcript_language"] = args[i + 1]
+            i += 2
+        elif args[i] == "--summary-language":
+            kwargs["summary_language"] = args[i + 1]
+            i += 2
         elif args[i] == "--language":
-            kwargs["language"] = args[i + 1]
+            print("Warning: --language is deprecated. Use --transcript-language and/or --summary-language.", file=sys.stderr)
+            kwargs["summary_language"] = args[i + 1]
             i += 2
         else:
             print(f"Unknown option: {args[i]}", file=sys.stderr)
@@ -43,7 +53,8 @@ def main() -> None:
             audio_path=audio_file,
             model=kwargs.get("model", ""),
             output_dir=kwargs.get("output_dir", "."),
-            language=kwargs.get("language", "auto"),
+            transcript_language=kwargs.get("transcript_language", "auto"),
+            summary_language=kwargs.get("summary_language", "auto"),
         )
         print(f"Summary saved successfully.")
         print(f"  Transcript: {audio_file}.transcript.json")

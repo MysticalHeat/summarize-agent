@@ -32,7 +32,8 @@ Always output valid JSON only."""
 
 USER_PROMPT_TEMPLATE = """Analyze this meeting transcript and produce a structured summary.
 
-Detected language: {language}
+Return all summary fields in {language}. Write the summary, topics, decisions, action items, and speaker highlights in {language}.
+
 Duration: {duration:.0f} seconds
 Speakers: {speakers}
 

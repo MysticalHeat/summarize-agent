@@ -39,7 +39,8 @@ class CLIConfig:
     audio_path: str
     model: str
     output_dir: str
-    language: str
+    transcript_language: str
+    summary_language: str
 
     @classmethod
     def from_args(cls, args: dict) -> CLIConfig:
@@ -47,5 +48,6 @@ class CLIConfig:
             audio_path=args["audio_file"],
             model=args.get("--model") or "",
             output_dir=args.get("--output-dir") or ".",
-            language=args.get("--language") or "auto",
+            transcript_language=args.get("--transcript-language") or "auto",
+            summary_language=args.get("--summary-language") or "auto",
         )

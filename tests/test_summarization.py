@@ -119,7 +119,7 @@ class TestPromptBuilding:
 
         prompt = client._build_prompt(transcript, "auto")
 
-        assert "Detected language: en" in prompt
+        assert "Return all summary fields in en" in prompt
         assert "120" in prompt
         assert "A, B" in prompt
         assert "Hello world" in prompt
@@ -138,7 +138,7 @@ class TestPromptBuilding:
 
         prompt = client._build_prompt(transcript, "de")
 
-        assert "Detected language: de" in prompt
+        assert "Return all summary fields in de" in prompt
 
     def test_build_prompt_organizes_by_speaker(self):
         client = OpenRouterClient("test-key")
